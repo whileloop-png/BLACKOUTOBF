@@ -580,8 +580,8 @@ local function FLY()
     local BG = Instance.new('BodyGyro')
     local BV = Instance.new('BodyVelocity')
     BG.P = 9e4
-    BG.Parent = char.HumanoidRootPart
-    BV.Parent = char.HumanoidRootPart
+    BG.Parent = char:FindFirstChild("HumanoidRootPart")
+    BV.Parent = char:FindFirstChild("HumanoidRootPart")
     BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
     BG.cframe = char.HumanoidRootPart.CFrame
     BV.velocity = Vector3.new(0, 0, 0)
@@ -670,16 +670,71 @@ function NOFLY()
     end
 --//DISABLE BLACKOUT FLY
 
+local function hookCanCollide(torso, enable)
+    if enable then
+        mt.__newindex = function(instance, property, value)
+            if instance == torso and property == "CanCollide" and value == true then
+                return -- Prevent CanCollide from being set to true
+            end
+            return oldNewIndex(instance, property, value)
+        end
+    else
+        mt.__newindex = oldNewIndex -- Restore the original behavior
+    end
+end
+
+local function enableNoclip()
+    local torso = char:FindFirstChild("Torso")
+    local head = char:FindFirstChild("HeadPart")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+
+    if torso then
+        setreadonly(mt, false)
+        torso.CanCollide = false
+        if head then head.CanCollide = false end
+        if hrp then hrp.CanCollide = false end
+        hookedTorso = torso
+        hookCanCollide(torso, true)
+
+        game:GetService("RunService").RenderStepped:Connect(function()
+            if hookedTorso then
+                torso.CanCollide = false
+                if head then head.CanCollide = false end
+                if hrp then hrp.CanCollide = false end
+            end
+        end)
+    else
+        warn("Torso not found in the character")
+    end
+    setreadonly(mt, true)
+end
+
+local function disableNoclip()
+    if hookedTorso then
+        setreadonly(mt, false)
+        hookCanCollide(hookedTorso, false)
+        hookedTorso.CanCollide = true
+        local head = char:FindFirstChild("HeadPart")
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if head then head.CanCollide = true end
+        if hrp then hrp.CanCollide = true end
+        hookedTorso = nil
+        setreadonly(mt, true)
+    end
+end
+
 
 local function setBlackoutFlyState(ItsTrue)
     if ItsTrue and not FLYING then  -- Check if fly mode should be activated and not already active
         warn("Starting fly mode")  -- Debugging: Check if fly is enabled
         FLYING = true  -- Set the flag to true, indicating fly mode is active
         spawn(FLY)  -- Activate flying
+        enableNoclip()
     elseif not ItsTrue and FLYING then  -- Check if fly mode should be deactivated and currently active
         warn("Stopping fly mode")  -- Debugging: Check if fly is disabled
         FLYING = false  -- Set the flag to false, indicating fly mode is deactivated
         spawn(NOFLY)  -- Deactivate flying
+        disableNoclip()
     end
 end
 
@@ -981,18 +1036,7 @@ end
 
 end)
 
-local function hookCanCollide(torso, enable)
-    if enable then
-        mt.__newindex = function(instance, property, value)
-            if instance == torso and property == "CanCollide" and value == true then
-                return -- Prevent CanCollide from being set to true
-            end
-            return oldNewIndex(instance, property, value)
-        end
-    else
-        mt.__newindex = oldNewIndex -- Restore the original behavior
-    end
-end
+
 
 -- Toggles for unlocking and looting
 local Window = Library:CreateWindow({
@@ -1043,7 +1087,6 @@ LeftGroupBox:AddToggle('BlackoutFlyToggle', {
     Tooltip = 'Toggles blackout fly mode.',
     Callback = function(v)
         blackoutFlyEnabled = v
-        warn("blackoutFlyEnabled set to:", blackoutFlyEnabled)  -- Debugging: verify toggle state change
     end
 })
 
