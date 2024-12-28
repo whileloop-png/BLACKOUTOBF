@@ -1027,8 +1027,8 @@ end
             setBlackoutFlyState(flykeyPressed)
     else
 
-            if not flykeyPressed then
-                setBlackoutFlyState(flykeyPressed)
+    if not flykeyPressed then
+        setBlackoutFlyState(flykeyPressed)
 
         end
     end
@@ -1047,21 +1047,27 @@ local Window = Library:CreateWindow({
 })
 
 local Tabs = {
-    main = Window:AddTab('CURRENT BUILD, MAIN'),
-    esc = Window:AddTab('CURRENT BUILD, ESC'),
+    main = Window:AddTab('CURRENT BUILD'),
+    esc = Window:AddTab('MISCELLANEOUS'),
     ['UI Settings'] = Window:AddTab('UI Settings'),
 }
 
+local LeftGroupBox = Tabs.main:AddLeftGroupbox("COMBAT")
+
+local RightGroupBox = Tabs.main:AddRightGroupbox("MOVEMENT")
+
+local LootGroupBox = Tabs.main:AddRightGroupbox("LOOT")
+
+local KeyBindsGroupBox = Tabs.esc:AddRightGroupbox("KEYBINDS")
+
+local OneRightGroupBox = Tabs.main:AddRightGroupbox("MISCELLANEOUS")
+
+local extMISC = Tabs.esc:AddLeftGroupbox("ext")
 
 
-local LeftGroupBox = Tabs.esc:AddLeftGroupbox(CURRENTVERSION)
-
-local RightGroupBox = Tabs.esc:AddRightGroupbox(CURRENTVERSION)
-
-local OneRightGroupBox = Tabs.esc:AddRightGroupbox(CURRENTVERSION)
 
 LeftGroupBox:AddToggle('killaura', {
-    Text = 'melee aura',
+    Text = 'Melee Aura',
     Default = false,
     Tooltip = 'toggles kill aura.',
     Callback = function(v)
@@ -1072,7 +1078,7 @@ LeftGroupBox:AddToggle('killaura', {
 
 
 LeftGroupBox:AddToggle('autobash', {
-    Text = 'bash aura',
+    Text = 'Bash Aura',
     Default = false,
     Tooltip = 'automatically bashes every door near you (INSTANT BASH)',
     Callback = function(v)
@@ -1081,7 +1087,7 @@ LeftGroupBox:AddToggle('autobash', {
     end
 })
 
-LeftGroupBox:AddToggle('BlackoutFlyToggle', {
+RightGroupBox:AddToggle('BlackoutFlyToggle', {
     Text = 'fly',
     Default = false,
     Tooltip = 'Toggles blackout fly mode.',
@@ -1090,7 +1096,19 @@ LeftGroupBox:AddToggle('BlackoutFlyToggle', {
     end
 })
 
-LeftGroupBox:AddToggle('player noclip', {
+RightGroupBox:AddSlider('FlySpeedSlider', {
+    Text = 'Fly Speed m/s',
+    Default = 1,
+    Min = 1,
+    Max = 15,
+    Rounding = 1,
+    Compact = true,
+    Callback = function(v)
+        iyflyspeed = v
+    end
+})
+
+RightGroupBox:AddToggle('player noclip', {
     Text = 'player noclip',
     Default = false,
     Tooltip = 'erm.. no.. clip..',
@@ -1146,7 +1164,7 @@ LeftGroupBox:AddToggle('player noclip', {
     end
 })
 
-local brokencharfix = RightGroupBox:AddButton({
+local brokencharfix = extMISC:AddButton({
     Text = 'FIX BROKEN CHARACTER',
     Func = function()
     game:GetService("ReplicatedStorage").Events.Player.Ragdoll:FireServer()
@@ -1155,7 +1173,7 @@ local brokencharfix = RightGroupBox:AddButton({
     Tooltip = 'FIXES CHARACTER NOT ROTATING AFTER RAGDOLLING WITH NOCLIP ENABLED.'
 })
 
-local Button = RightGroupBox:AddButton({
+local Button = extMISC:AddButton({
     Text = "soundspam (server sided)",
     Func = function()
         local args = {
@@ -1169,27 +1187,11 @@ local Button = RightGroupBox:AddButton({
     Tooltip = 'yaw'
 })
 
-LeftGroupBox:AddLabel('Keybind'):AddKeyPicker('flyToggleButton', {
-    Default = 'F',  -- Default key is 'F'
-    SyncToggleState = false,  -- Don't sync with the toggle (toggle should not control keybind)
-    Mode = 'Toggle',  -- Toggle mode for the keybind
-    Text = 'Fly toggle',  -- Text to display in the keybind menu
-    NoUI = false,  -- Show in the keybind menu
-
-    Callback = function(Value)
-        -- Track if the key is pressed
-        if blackoutFlyEnabled then  -- Only allow the keybind to toggle fly when the toggle is ON
-            flykeyPressed = Value  -- Set flykeyPressed to true or false based on key press
-        end
-    end,
-
-    ChangedCallback = function(New)
-    end
-})
+local UserInputService = game:GetService("UserInputService")
 
 
-LeftGroupBox:AddToggle('UnlockToggle', {
-    Text = 'auto unlock',
+LootGroupBox:AddToggle('UnlockToggle', {
+    Text = 'Auto Unlock',
     Default = false,
     Tooltip = 'automatically unlocks for you.',
     Callback = function(v)
@@ -1197,40 +1199,8 @@ LeftGroupBox:AddToggle('UnlockToggle', {
     end
 })
 
-LeftGroupBox:AddToggle('instantinteract', {
-    Text = 'insta interact',
-    Default = false,
-    Tooltip = 'interacts instantly instead of having to wait for a holdDuration.',
-    Callback = function(v)
-        instantInteract = v
-    end
-})
-
-LeftGroupBox:AddToggle('loot esp', {
-    Text = 'loot finder',
-    Default = false,
-    Tooltip = 'finds loot for u.',
-    Callback = function(v)
-        isKeycardFinderEnabled = v
-    end
-})
-
-
-
-LeftGroupBox:AddSlider('legitunlock', { 
-    Text = 'LEGIT UNLOCK',
-    Default = 0,
-    Min = 0,
-    Max = 6,
-    Rounding = 1,
-    Compact = false,
-    Callback = function(Value)
-        unlockCooldown = Value
-    end
-})
-
-LeftGroupBox:AddToggle('AutoLootToggle', {
-    Text = 'auto loot',
+LootGroupBox:AddToggle('AutoLootToggle', {
+    Text = 'Auto Loot',
     Default = false,
     Tooltip = 'automatically loots cash and valuables for you.',
     Callback = function(v)
@@ -1240,19 +1210,49 @@ LeftGroupBox:AddToggle('AutoLootToggle', {
 })
 
 
-LeftGroupBox:AddSlider('legitloot', {
-    Text = 'LEGIT LOOT',
+LootGroupBox:AddToggle('loot esp', {
+    Text = 'Loot Chams',
+    Default = false,
+    Tooltip = 'finds loot for u.',
+    Callback = function(v)
+        isKeycardFinderEnabled = v
+    end
+})
+
+LootGroupBox:AddToggle('instantinteract', {
+    Text = 'Instant Interaction',
+    Default = false,
+    Tooltip = 'interacts instantly instead of having to wait for a holdDuration.',
+    Callback = function(v)
+        instantInteract = v
+    end
+})
+
+LootGroupBox:AddSlider('legitunlock', { 
+    Text = 'unlock delay m/s',
+    Default = 0,
+    Min = 0,
+    Max = 6,
+    Rounding = 1,
+    Compact = true,
+    Callback = function(Value)
+        unlockCooldown = Value
+    end
+})
+
+LootGroupBox:AddSlider('legitloot', {
+    Text = 'loot delay m/s',
     Default = 0,
     Min = 0,
     Max = 4,
     Rounding = 1,
-    Compact = false,
+    Compact = true,
     Callback = function(Value)
         lootCooldown = Value
     end
 })
 
-LeftGroupBox:AddToggle('silentaim', {
+--[[ LeftGroupBox:AddToggle('silentaim', {
     Text = 'silent aim',
     Default = false,
     Tooltip = 'unlike traditional aimbot, silent aim redirects bullets instead of your camera, for more legit use!',
@@ -1297,9 +1297,9 @@ LeftGroupBox:AddDropdown('hitparts', {
         SilentSettings.Main.TargetPart = v
     end
 })
+ ]]
 
-
-local randomchar = RightGroupBox:AddButton({
+local randomchar = extMISC:AddButton({
     Text = 'streamer mode',
     Func = function()
         randomizeCharacterAppearance()
@@ -1309,7 +1309,7 @@ local randomchar = RightGroupBox:AddButton({
     Tooltip = 'THIS ACTION CAN NOT BE UNDONE. REJOIN FOR A FRESH RESET.'
 })
 
-local performancemode = RightGroupBox:AddButton({
+local performancemode = extMISC:AddButton({
     Text = 'performance mode',
     Func = function()
     togglePerformanceMode()
@@ -1318,9 +1318,7 @@ local performancemode = RightGroupBox:AddButton({
     Tooltip = 'self explanatory, are you retar? :skull:'
 })
 
-
-
-LeftGroupBox:AddToggle('FieldOfView', {
+OneRightGroupBox:AddToggle('FieldOfView', {
     Text = 'FOV',
     Default = false,
     Tooltip = 'Modify your camera\'s FOV.',
@@ -1337,22 +1335,10 @@ LeftGroupBox:AddToggle('FieldOfView', {
     end
 })
 
-LeftGroupBox:AddSlider('FlySpeedSlider', {
-    Text = 'flyspeed',
-    Default = 7,
-    Min = 5,
-    Max = 120,
-    Rounding = 1,
-    Compact = false,
-    Callback = function(v)
-        iyflyspeed = v
-    end
-})
-
-LeftGroupBox:AddSlider('fieldofviewslider', { 
-    Text = 'field of view',
-    Default = 70,
-    Min = 45,
+OneRightGroupBox:AddSlider('fieldofviewslider', { 
+    Text = 'FOV m/s',
+    Default = 80,
+    Min = 80,
     Max = 140,
     Rounding = 1,
     Compact = true,
@@ -1366,6 +1352,27 @@ LeftGroupBox:AddSlider('fieldofviewslider', {
     end
 })
 
+KeyBindsGroupBox:AddLabel('Keybind'):AddKeyPicker('flyToggleButton', {
+    Default = 'F',  -- Default key is 'F'
+    SyncToggleState = false,  -- Don't sync with the toggle (toggle should not control keybind)
+    Mode = 'Toggle',  -- Toggle mode for the keybind
+    Text = 'Player Fly',  -- Text to display in the keybind menu
+    NoUI = false,  -- Show in the keybind menu
+
+    Callback = function(Value)
+        -- Check if the player is typing or interacting with UI
+        local isTyping = UserInputService:GetFocusedTextBox() ~= nil
+
+        -- Only toggle fly if not typing and the fly toggle is enabled
+        if blackoutFlyEnabled and not isTyping then
+            flykeyPressed = Value  -- Set flykeyPressed to true or false based on key press
+        end
+    end,
+
+    ChangedCallback = function(New)
+        -- Handle changes to the keybind if necessary (optional)
+    end
+})
 
 
 local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
