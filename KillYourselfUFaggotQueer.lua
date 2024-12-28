@@ -1352,7 +1352,7 @@ OneRightGroupBox:AddSlider('fieldofviewslider', {
     end
 })
 
-KeyBindsGroupBox:AddLabel('Keybind'):AddKeyPicker('flyToggleButton', {
+KeyBindsGroupBox:AddLabel('Fly Keybind'):AddKeyPicker('flyToggleButton', {
     Default = 'F',  -- Default key is 'F'
     SyncToggleState = false,  -- Don't sync with the toggle (toggle should not control keybind)
     Mode = 'Toggle',  -- Toggle mode for the keybind
